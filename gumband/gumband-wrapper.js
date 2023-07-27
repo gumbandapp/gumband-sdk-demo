@@ -26,7 +26,6 @@ class GumbandWrapper {
             process.env.EXHIBIT_ID,
             `${__dirname}/manifest.json`,
             {
-                endpoint: 'local',
                 contentLocation: './electron-app/content'
             }
             );
