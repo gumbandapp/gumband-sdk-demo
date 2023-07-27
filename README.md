@@ -23,6 +23,8 @@ Run `npm install` to install dependencies.
 
 Run `npm run start` to launch the Electron app and connect to Gumband.
 
+After a few seconds, stop the Electron app and run `npm run start` again. This is only necessary because of [an existing bug](https://deeplocal.atlassian.net/browse/GUM-932) related to default setting values.
+
 ## Gumband Integrations in this Demo:
 
 #### Operation Mode ####

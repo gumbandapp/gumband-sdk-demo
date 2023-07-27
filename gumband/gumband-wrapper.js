@@ -120,7 +120,10 @@ class GumbandWrapper {
         const gameDuration = await this.getSettingValue("game-group/game-duration");
         const gameSummaryScreenDuration = await this.getSettingValue("game-group/game-summary-screen-duration");
 
-        let bodyParagraphs = body.split('|');
+        let bodyParagraphs = [];
+        if(body) {
+            bodyParagraphs = body.split('|');
+        }
         if(gameMode) {
             this.window.webContents.send("fromGumband", { type: "game-duration", value: gameDuration });
             this.window.webContents.send("fromGumband", { type: "game-summary-screen-duration", value: gameSummaryScreenDuration });
