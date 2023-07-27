@@ -1,5 +1,7 @@
 # Gumband SDK Demo #
-This demo project represents an arbitrary exhibit build to demo how Gumband is used and could be integrated for your next project. The repo has two main parts: an Electron app and a Gumband integration via the [Gumband SDK](https://www.npmjs.com/package/@deeplocal/gumband-node-sdk). The Gumband integration is the important part, since the Electron app is simply meant to stand in as any third party integration that can communicate through TCP or some other communication protocol. This repo demonstrates how to:
+This demo project represents an arbitrary exhibit build to demo how Gumband is used and could be integrated for your next project. This demo is an Electron app that can function as digital signage or as a simple, interactable game. 
+
+The repo has two main parts: an Electron app and a Gumband integration via the [Gumband SDK](https://www.npmjs.com/package/@deeplocal/gumband-node-sdk). The Gumband integration is the important part, since the Electron app is simply meant to stand in as any third party integration that can communicate through TCP or some other communication protocol. This repo demonstrates how to:
 - Use statuses as health checks for your exhibits.
 - Use controls to trigger one-time events in your exhibits.
 - Use settings to add configurations to your exhibits.
