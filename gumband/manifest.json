@@ -1,0 +1,98 @@
+{
+    "manifest": {
+        "statuses": [
+            {
+                "id": "screen-status",
+                "type": "String",
+                "display": "Screen is currently showing:",
+                "order": 0
+            },
+            {
+                "id": "last-game-played",
+                "type": "String",
+                "display": "Last game played:",
+                "order": 1
+            }
+        ],
+        "controls": [
+            {
+              "id": "reload-frontend",
+              "type": "Single",
+              "display": "Reload Frontend",
+              "order": 0
+            },
+            {
+              "id": "toggle-game-mode",
+              "type": "Single",
+              "display": "Toggle Game Mode",
+              "order": 1
+            }
+        ],
+        "settings": [
+            {
+                "id": "signage-group",
+                "type": "SettingsGroup",
+                "display": "Digital Signage Settings",
+                "order": 0,
+                "schema": [
+                    {
+                        "id": "header",
+                        "type": "TextInput",
+                        "display": "Header Copy",
+                        "default": "Gumband Demo",
+                        "order": 0
+                    },
+                    {
+                        "id": "subheader",
+                        "type": "TextInput",
+                        "display": "Subheader Copy",
+                        "default": "Digital Signage",
+                        "order": 1
+                    },
+                    {
+                        "id": "body",
+                        "type": "TextInput",
+                        "display": "Body Copy (separate by | for new paragraph)",
+                        "default": "Gumband is an interactive experience tool for developers and operators.|This demo project represents an arbitrary exhibit build to demo how Gumband is used and could be integrated for your next project.",
+                        "order": 2
+                    },
+                    {
+                        "id": "main-image",
+                        "type": "FileSelection",
+                        "display": "Image Asset",
+                        "order": 3
+                    }
+                ]
+            },
+            {
+                "id": "game-group",
+                "type": "SettingsGroup",
+                "display": "Game Settings",
+                "order": 1,
+                "schema": [
+                    {
+                        "id": "game-duration",
+                        "type": "IntegerInput",
+                        "display": "Game Duration (seconds)",
+                        "default": "5",
+                        "order": 0
+                    },
+                    {
+                        "id": "game-summary-screen-duration",
+                        "type": "IntegerInput",
+                        "display": "Game Summary Screen Duration (seconds)",
+                        "default": "5",
+                        "order": 1
+                    }
+                ]
+            },
+            {
+                "id": "game-mode",
+                "type": "Toggle",
+                "display": "Game Mode",
+                "default": "",
+                "order": 2
+            }
+        ]
+    }
+  }
