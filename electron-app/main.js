@@ -82,7 +82,7 @@ function createEndGameScreen() {
     root.appendChild(headerElement);
     root.appendChild(subheaderElement);
 
-    window.gb.send("fromFrontend", { type: 'game-completed', value: targetCount });
+    window.gb.send("fromElectron", { type: 'game-completed', value: targetCount });
 
     setTimeout(() => {
         createGameMenu();
