@@ -25,6 +25,15 @@ Run `npm run start` to launch the Electron app and connect to Gumband.
 
 After a few seconds, stop the Electron app and run `npm run start` again. This is only necessary because of [an existing bug](https://deeplocal.atlassian.net/browse/GUM-932) related to default setting values.
 
+### Enabling the Gumband Hardware Integration (Optional) ###
+To enable the Gumband Hardware for this demo: 
+- Follow the [Hardware Getting Started Guide](https://deeplocal.atlassian.net/wiki/spaces/GS/pages/37617673/Hardware+Getting+Started+Guide) to set up the Gumband Hardware and your development environment. Set up your hardware under the same site in the Gumband UI as this demo exhibit.
+- In the Arduino IDE, open the `SendButtonPresses` firmware example by navigating to File -> Examples -> Gumband API -> SendButtonPresses and flash it onto your Gumband Hardware.
+- Add `EXHIBIT_GBTT_PORT` as an environment variable to the `.env` file. This can be any port available on your machine, and will be the MQTT port through which the hardware will communicate with the exhibit directly.
+- Connect the Hardware instance in the Gumband UI to the Demo exhibit. You can do this through the Hardware overview tab.
+- Add the `${IP}:${EXHIBIT_GBTT_PORT}` in the `MQTT IP Address` field under the Demo exhibit Hardware tab in the Gumband UI. The IP should be the IP address of the machine running the exhibit. This is how the Hardware knows where to communicate with the exhibit MQTT service.
+- The hardware should now be online and connected to the exhibit, and pressing the button next to the ethernet port should toggle the game mode for the exhibit.
+
 ## Gumband Integrations in this Demo:
 
 #### Operation Mode ####
@@ -54,3 +63,6 @@ After a few seconds, stop the Electron app and run `npm run start` again. This i
 
 #### Reporting Events ####
 - When a game is completed.
+
+#### Gumband Hardware Integration ####
+- Pressing the button on the Gumband Hardware toggles the Game Mode setting.

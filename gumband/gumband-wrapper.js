@@ -26,9 +26,11 @@ class GumbandWrapper {
             process.env.EXHIBIT_ID,
             `${__dirname}/manifest.json`,
             {
-                contentLocation: './electron-app/content'
+                contentLocation: './electron-app/content',
+                gbttEnabled: true,
+                gbttPort: process.env.EXHIBIT_GBTT_PORT
             }
-            );
+        );
         this.addSDKListeners();
         this.addElectronAppListeners();
     }
@@ -78,6 +80,17 @@ class GumbandWrapper {
                 }, 100);
             }
         });
+
+        this.sdk.on(Sockets.HARDWARE_PROPERTY_RECEIVED, async (payload) => {
+            if(payload.peripheral === "Button" && payload.value === 0) {
+                this.sdk.setSetting(
+                    "game-mode", 
+                    !this.convertToBoolean(
+                        (await this.sdk.getSetting("game-mode")).value
+                    )
+                );
+            }
+        });
     }
 
     /**
@@ -85,14 +98,12 @@ class GumbandWrapper {
      */
     addElectronAppListeners() {
         ipcMain.on("fromElectron", async (event, data) => {
-            switch (data.type) {
-                case "game-completed":
-                    this.sdk.event.create("game-completed", { 
-                        "targets-clicked": data.value,
-                        "game-duration": await this.getSettingValue("game-group/game-duration")
-                    });
-                    this.sdk.setStatus("last-game-played", new Date().toString());
-                    break;
+            if (data.type === "game-completed") {
+                this.sdk.event.create("game-completed", { 
+                    "targets-clicked": data.value,
+                    "game-duration": await this.getSettingValue("game-group/game-duration")
+                });
+                this.sdk.setStatus("last-game-played", new Date().toString());
             }
         });
     }
