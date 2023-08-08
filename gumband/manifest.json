@@ -12,6 +12,13 @@
                 "type": "String",
                 "display": "Last game played:",
                 "order": 1
+            },
+            {
+                "id": "source-code",
+                "type": "String",
+                "display": "Source Code:",
+                "default": "https://bitbucket.org/deeplocal/gumband-sdk-demo/src/master/",
+                "order": 2
             }
         ],
         "controls": [
