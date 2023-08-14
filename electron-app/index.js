@@ -1,5 +1,5 @@
 const { app, BrowserWindow } = require('electron');
-const { GumbandWrapper } = require('../gumband/gumband-wrapper');
+const { GumbandService } = require('../gumband/gumband-service');
 
 let win;
 let gb;
@@ -19,7 +19,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-  gb = new GumbandWrapper(win);
+  gb = new GumbandService(win);
 });
 
 

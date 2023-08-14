@@ -5,7 +5,7 @@ const { ipcMain } = require("electron");
 /**
  * A class that wraps the Gumband SDK and handles websocket messages that come from the Gumband Cloud.
  */
-class GumbandWrapper {
+class GumbandService {
     /**
      * A reference to the window object of the Electron app frontend.
      */
@@ -13,7 +13,7 @@ class GumbandWrapper {
     /**
      * A reference to the Gumband SDK instance.
      */
-    sdk;
+    gumbandSDK;
     /**
      * Whether the exhibit is in operation mode. Configured in the Gumband UI.
      */
@@ -21,7 +21,7 @@ class GumbandWrapper {
 
     constructor(window) {
         this.window = window;
-        this.sdk = new Gumband(
+        this.gumbandSDK = new Gumband(
             process.env.EXHIBIT_TOKEN,
             process.env.EXHIBIT_ID,
             `${__dirname}/manifest.json`,
@@ -39,38 +39,34 @@ class GumbandWrapper {
      * Add listeners on the Gumband SDK websocket connection to the Gumband Cloud.
      */
     addSDKListeners() {
-        this.sdk.on(Sockets.READY, async (manifest) => {
+        this.gumbandSDK.on(Sockets.READY, async (manifest) => {
             this.opMode = manifest.opMode === "On";
-
             await this.addSeedImages();
+            this.setFrontendOperationMode();
             this.updateFrontendFromSettings();
         });
 
-        this.sdk.on(Sockets.OP_MODE_RECEIVED, (payload) => {
+        this.gumbandSDK.on(Sockets.OP_MODE_RECEIVED, (payload) => {
             this.opMode = payload.value;
-            this.sdk.logger.info(`OP_MODE changed to: ${payload.value}`);
-
-            if(this.opMode) {
-                this.updateFrontendFromSettings();
-            } else {
-                this.frontendStandbyMode();
-            }
+            this.setFrontendOperationMode();
+            this.updateFrontendFromSettings();
+            this.gumbandSDK.logger.info(`OP_MODE changed to: ${payload.value}`);
         });
 
-        this.sdk.on(Sockets.SETTING_RECEIVED, (payload) => {
-            this.sdk.logger.info(`${payload.id} setting updated to: ${payload.value}`);
+        this.gumbandSDK.on(Sockets.SETTING_RECEIVED, (payload) => {
+            this.gumbandSDK.logger.info(`${payload.id} setting updated to: ${payload.value}`);
 
             this.updateFrontendFromSettings();
         });
 
-        this.sdk.on(Sockets.CONTROL_RECEIVED, async (payload) => {
-            this.sdk.logger.info(`Control triggered: ${payload.id}`);
+        this.gumbandSDK.on(Sockets.CONTROL_RECEIVED, async (payload) => {
+            this.gumbandSDK.logger.info(`Control triggered: ${payload.id}`);
             
             if(payload.id === "toggle-game-mode") {
-                this.sdk.setSetting(
+                this.gumbandSDK.setSetting(
                     "game-mode", 
                     !this.convertToBoolean(
-                        (await this.sdk.getSetting("game-mode")).value
+                        (await this.getSettingValue("game-mode"))
                     )
                 );
             } else if (payload.id === "reload-frontend") {        
@@ -81,12 +77,12 @@ class GumbandWrapper {
             }
         });
 
-        this.sdk.on(Sockets.HARDWARE_PROPERTY_RECEIVED, async (payload) => {
+        this.gumbandSDK.on(Sockets.HARDWARE_PROPERTY_RECEIVED, async (payload) => {
             if(payload.peripheral === "Button" && payload.value === 0) {
-                this.sdk.setSetting(
+                this.gumbandSDK.setSetting(
                     "game-mode", 
                     !this.convertToBoolean(
-                        (await this.sdk.getSetting("game-mode")).value
+                        (await this.getSettingValue("game-mode"))
                     )
                 );
             }
@@ -99,11 +95,11 @@ class GumbandWrapper {
     addElectronAppListeners() {
         ipcMain.on("fromElectron", async (event, data) => {
             if (data.type === "game-completed") {
-                this.sdk.event.create("game-completed", { 
+                this.gumbandSDK.event.create("game-completed", { 
                     "targets-clicked": data.value,
                     "game-duration": await this.getSettingValue("game-group/game-duration")
                 });
-                this.sdk.setStatus("last-game-played", new Date().toString());
+                this.gumbandSDK.setStatus("last-game-played", new Date().toString());
             }
         });
     }
@@ -111,9 +107,11 @@ class GumbandWrapper {
     /**
      * Set the electron frontend app to standby mode.
      */
-    frontendStandbyMode() {
-        this.window.webContents.send("fromGumband", { type: "stand-by", value: true });
-        this.sdk.setStatus("screen-status", "Standby Screen");
+    setFrontendOperationMode() {
+        this.window.webContents.send("fromGumband", { type: "operation-mode", value: this.opMode });
+        if(!this.opMode) {
+            this.gumbandSDK.setStatus("screen-status", "Standby Screen");
+        }
     }
 
     /**
@@ -135,42 +133,41 @@ class GumbandWrapper {
         if(body) {
             bodyParagraphs = body.split('|');
         }
-        if(gameMode) {
-            this.window.webContents.send("fromGumband", { type: "game-duration", value: gameDuration });
-            this.window.webContents.send("fromGumband", { type: "game-summary-screen-duration", value: gameSummaryScreenDuration });
-            this.window.webContents.send("fromGumband", { type: "game-mode" });
-            this.sdk.setStatus("screen-status", "Game Screen");
-        } else {
-            this.window.webContents.send("fromGumband", { type: "stand-by", value: false });
+        if(!gameMode) {
+            this.window.webContents.send("fromGumband", { type: "game-mode", value: gameMode });
             this.window.webContents.send("fromGumband", { type: "header", value: header });
             this.window.webContents.send("fromGumband", { type: "subheader", value: subheader });
             this.window.webContents.send("fromGumband", { type: "body", value: bodyParagraphs });
             this.window.webContents.send("fromGumband", { type: "main-image", value: image });
-            this.sdk.setStatus("screen-status", "Digital Signage");
+            this.gumbandSDK.setStatus("screen-status", "Digital Signage");
+        } else {
+            this.window.webContents.send("fromGumband", { type: "game-duration", value: gameDuration });
+            this.window.webContents.send("fromGumband", { type: "game-summary-screen-duration", value: gameSummaryScreenDuration });
+            this.window.webContents.send("fromGumband", { type: "game-mode", value: gameMode });
+            this.gumbandSDK.setStatus("screen-status", "Game Screen");
         }
     }
 
     async getSettingValue(manifestId) {
-        return (await this.sdk.getSetting(manifestId)).value;
+        return (await this.gumbandSDK.getSetting(manifestId)).value;
     }
 
     /**
      * Upload the default images included in the repo to the Gumband cloud if they aren't uploaded already.
      */
     async addSeedImages() {
-        let currentRemoteFiles = (await this.sdk.content.getRemoteFileList()).files.map(file => file.file);
-        fs.readdir(`${__dirname}/seed-images`, (e, files) => {
-            files.map((file) => {
+        let currentRemoteFiles = (await this.gumbandSDK.content.getRemoteFileList()).files.map(file => file.file);
+        fs.readdir(`${__dirname}/../seed-images`, async (e, files) => {
+            let fileUploadPromises = files.map((file) => {
                 if(!currentRemoteFiles.find(currentFile => currentFile === file)) {
-                    let stream = fs.createReadStream(`${__dirname}/seed-images/${file}`)
-                    return this.sdk.content.uploadFile(stream);
+                    let stream = fs.createReadStream(`${__dirname}/../seed-images/${file}`)
+                    return this.gumbandSDK.content.uploadFile(stream);
                 };
             });
-            setTimeout(async () => {
-                this.sdk.content.sync();
-            }, 500);
-        });
 
+            await Promise.all(fileUploadPromises);
+            this.gumbandSDK.content.sync();
+        });
     }
 
     /**
@@ -183,4 +180,4 @@ class GumbandWrapper {
     }
 }
 
-module.exports = { GumbandWrapper };
+module.exports = { GumbandService };

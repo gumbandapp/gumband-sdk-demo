@@ -1,6 +1,6 @@
 let targetCount = 0;
-let gameDuration = 0;
-let gameSummaryScreenDuration = 0;
+let gameDuration = 5;
+let gameSummaryScreenDuration = 5;
 
 /**
  * Remove all children for the given HTML element from the DOM.
@@ -122,18 +122,24 @@ window.gb.receive("fromGumband", (data) => {
     switch(data.type) {
         case "game-mode":
             clearChildren(root);
-            createGameMenu();
+            if(data.value) {
+                createGameMenu();
+            } else {
+                createDigitalSignagePage();
+            }
+            break;
+        case "operation-mode":
+            if(!data.value) {
+                clearChildren(root);
+            } else {
+                createDigitalSignagePage();
+            }
             break;
         case "game-duration":
             gameDuration = data.value;
             break;
         case "game-summary-screen-duration":
             gameSummaryScreenDuration = data.value;
-        case "stand-by":
-            clearChildren(root);
-            if(!data.value) {
-                createDigitalSignagePage();
-            }
             break;
         case "header":
             const header = window.document.getElementsByClassName('header')[0];
