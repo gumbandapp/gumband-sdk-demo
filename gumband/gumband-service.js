@@ -2,6 +2,12 @@ const { Gumband, Sockets } = require("@deeplocal/gumband-node-sdk");
 const fs = require('fs');
 const { ipcMain } = require("electron");
 
+const ONE_DAY_IN_MILLISECONDS = 86400000;
+
+//these could be environment variables
+const SIX_MONTHS_IN_SECONDS = 15770000;
+const EPOCH_TIME_FOR_AUGUST_15_2023 = 1692121575;
+
 /**
  * A class that wraps the Gumband SDK and handles websocket messages that come from the Gumband Cloud.
  */
@@ -21,6 +27,9 @@ class GumbandService {
 
     constructor(window) {
         this.window = window;
+        this.installDate = EPOCH_TIME_FOR_AUGUST_15_2023;
+        this.maintenanceInterval = SIX_MONTHS_IN_SECONDS;
+
         this.gumbandSDK = new Gumband(
             process.env.EXHIBIT_TOKEN,
             process.env.EXHIBIT_ID,
@@ -44,6 +53,8 @@ class GumbandService {
             await this.addSeedImages();
             this.setFrontendOperationMode();
             this.updateFrontendFromSettings();
+
+            this.initializeMaintenanceReminders();
         });
 
         this.gumbandSDK.on(Sockets.OP_MODE_RECEIVED, (payload) => {
@@ -168,6 +179,28 @@ class GumbandService {
             await Promise.all(fileUploadPromises);
             this.gumbandSDK.content.sync();
         });
+    }
+
+
+    /**
+     * Initializes a time interval that runs every day to check if a new maintenance reminder should be sent.
+     */
+    initializeMaintenanceReminders() {
+        this.maintenanceNotificationsTriggered = this.getMaintenanceIntervalsSinceInstall();
+        setInterval(async () => {
+            if(this.maintenanceNotificationsTriggered < this.getMaintenanceIntervalsSinceInstall()) {
+                this.gumbandSDK.notifications.email('This is a maintenance reminder');
+                this.maintenanceNotificationsTriggered++;
+            }
+        }, ONE_DAY_IN_MILLISECONDS);
+    }
+
+    /**
+     * Returns the number of maintenances that should have occurred since initial installation.
+     * @returns The number of maintenances that should have occurred since install
+     */
+    getMaintenanceIntervalsSinceInstall() {
+        return Math.floor((Math.floor(new Date().getTime() / 1000) - this.installDate) / this.maintenanceInterval);
     }
 
     /**

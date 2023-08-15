@@ -64,5 +64,8 @@ To enable the Gumband Hardware for this demo:
 #### Reporting Events ####
 - When a game is completed.
 
+#### Custom Email Notifications
+- Send a maintenance email notification every 6 months from the date of the install.
+
 #### Gumband Hardware Integration ####
 - Pressing the button on the Gumband Hardware toggles the Game Mode setting.
