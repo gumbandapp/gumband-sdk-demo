@@ -100,6 +100,7 @@ function startGameTimer() {
  */
 function createNewTarget() {
     const root = window.document.getElementById("root");
+    window.gb.send("fromElectron", { type: 'button-clicked' });
     clearChildren(root);
     const target = document.createElement("button");
     target.className = "glowing-btn";

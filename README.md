@@ -69,3 +69,4 @@ To enable the Gumband Hardware for this demo:
 
 #### Gumband Hardware Integration ####
 - Pressing the button on the Gumband Hardware toggles the Game Mode setting.
+- Clicking a button target in the Button Clicker game blinks the Gumband Hardware LED.

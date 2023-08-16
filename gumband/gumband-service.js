@@ -2,6 +2,10 @@ const { Gumband, Sockets } = require("@deeplocal/gumband-node-sdk");
 const fs = require('fs');
 const { ipcMain } = require("electron");
 
+/**
+ * The length of time in milliseconds that the Hardware LED should blink on when a button in Button Click is clicked.
+ */
+const HARDWARE_LED_BLINK_TIME = 25;
 const ONE_DAY_IN_MILLISECONDS = 86400000;
 
 //these could be environment variables
@@ -24,6 +28,10 @@ class GumbandService {
      * Whether the exhibit is in operation mode. Configured in the Gumband UI.
      */
     opMode;
+    /**
+     * The ID of the Gumband Hardware.
+     */
+    hardwareId;
 
     constructor(window) {
         this.window = window;
@@ -98,6 +106,10 @@ class GumbandService {
                 );
             }
         });
+
+        this.gumbandSDK.on(Sockets.HARDWARE_ONLINE, (payload) => {
+            this.hardwareId = payload.hardwareId;
+        })
     }
 
     /**
@@ -111,6 +123,11 @@ class GumbandService {
                     "game-duration": await this.getSettingValue("game-group/game-duration")
                 });
                 this.gumbandSDK.setStatus("last-game-played", new Date().toString());
+            } else if (data.type === 'button-clicked') {
+                this.gumbandSDK.hardware.set(`${this.hardwareId}/LED/Toggle`, 1);
+                setTimeout(() => {
+                    this.gumbandSDK.hardware.set(`${this.hardwareId}/LED/Toggle`, 0);
+                }, HARDWARE_LED_BLINK_TIME);
             }
         });
     }
