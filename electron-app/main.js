@@ -100,12 +100,12 @@ function startGameTimer() {
  */
 function createNewTarget() {
     const root = window.document.getElementById("root");
-    window.gb.send("fromElectron", { type: 'button-clicked' });
     clearChildren(root);
     const target = document.createElement("button");
     target.className = "glowing-btn";
     target.onclick = () => {
         targetCount++;
+        window.gb.send("fromElectron", { type: 'target-hit' });
         createNewTarget();
     };
     target.style.position = "absolute";
@@ -121,6 +121,12 @@ function createNewTarget() {
 window.gb.receive("fromGumband", (data) => {
     const root = window.document.getElementById("root");
     switch(data.type) {
+        case "game-duration":
+            gameDuration = data.value;
+            break;
+        case "game-summary-screen-duration":
+            gameSummaryScreenDuration = data.value;
+            break;
         case "game-mode":
             clearChildren(root);
             if(data.value) {
@@ -129,41 +135,31 @@ window.gb.receive("fromGumband", (data) => {
                 createDigitalSignagePage();
             }
             break;
-        case "operation-mode":
-            if(!data.value) {
-                clearChildren(root);
-            } else {
-                createDigitalSignagePage();
-            }
-            break;
-        case "game-duration":
-            gameDuration = data.value;
-            break;
-        case "game-summary-screen-duration":
-            gameSummaryScreenDuration = data.value;
-            break;
         case "header":
             const header = window.document.getElementsByClassName('header')[0];
             let headerContent = document.createElement('span');
             headerContent.innerText = data.value;
+            clearChildren(header);
             header.appendChild(headerContent);
             break;
         case "subheader":
             const subheader = window.document.getElementsByClassName('subheader')[0];
             let subheaderContent = document.createElement('span');
             subheaderContent.innerText = data.value;
+            clearChildren(subheader);
             subheader.appendChild(subheaderContent);
             break;
         case "body":
             const body = window.document.getElementsByClassName('body')[0];
+            clearChildren(body);
             data.value.forEach(text => {
                 let bodyParagraph = document.createElement('p');
                 bodyParagraph.innerText = text;
                 body.appendChild(bodyParagraph);
             });
-            break;
         case "main-image":
             const mainImage = window.document.getElementsByClassName('main-image')[0];
+            clearChildren(mainImage);
             let imageContent = document.createElement('img');
             if(data.value) {
                 imageContent.src = `./content/${data.value}`;
@@ -172,3 +168,5 @@ window.gb.receive("fromGumband", (data) => {
             break;
     }
 });
+
+createDigitalSignagePage();
