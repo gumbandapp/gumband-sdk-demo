@@ -1,0 +1,8 @@
+EXHIBIT_TOKEN=b14c73f75f2cdd7be7da06299a5b4e6d
+EXHIBIT_ID=1
+
+# Epoch time (in seconds) for August 15, 2023
+INSTALL_DATE=1692121575
+
+# 6 months in seconds
+MAINTENANCE_INTERVAL=15770000
